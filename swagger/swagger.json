@@ -1,0 +1,411 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Course Management API",
+      "description": "API for managing courses, teachers, and roles with authentication and authorization",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000/api",
+        "description": "Local server"
+      }
+    ],
+    "paths": {
+      "/teachers/register": {
+        "post": {
+          "summary": "Register a new teacher (Admin only)",
+          "tags": ["Teachers"],
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeacherCreate"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Teacher registered successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            },
+            "400": { "description": "Validation error" },
+            "403": { "description": "Admin access required" },
+            "500": { "description": "Server error" }
+          }
+        }
+      },
+      "/teachers/login": {
+        "post": {
+          "summary": "Login a teacher",
+          "tags": ["Teachers"],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "username": { "type": "string" },
+                    "password": { "type": "string" }
+                  },
+                  "required": ["username", "password"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successful login",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": { "type": "string" },
+                      "role": { "type": "string", "enum": ["admin", "user"] }
+                    }
+                  }
+                }
+              }
+            },
+            "401": { "description": "Invalid credentials" },
+            "500": { "description": "Server error" }
+          }
+        }
+      },
+      "/teachers": {
+        "get": {
+          "summary": "Get all teachers",
+          "tags": ["Teachers"],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "List of teachers",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Teacher" }
+                  }
+                }
+              }
+            },
+            "401": { "description": "Unauthorized" },
+            "500": { "description": "Server error" }
+          }
+        }
+      },
+      "/teachers/{id}": {
+        "delete": {
+          "summary": "Delete a teacher (Admin only)",
+          "tags": ["Teachers"],
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": { "type": "string" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Teacher deleted",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            },
+            "403": { "description": "Admin access required" },
+            "404": { "description": "Teacher not found" },
+            "500": { "description": "Server error" }
+          }
+        }
+      },
+      "/courses": {
+        "post": {
+          "summary": "Create a new course (Admin only)",
+          "tags": ["Courses"],
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CourseCreate" }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Course created",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Course" }
+                }
+              }
+            },
+            "400": { "description": "Validation error" },
+            "403": { "description": "Admin access required" },
+            "500": { "description": "Server error" }
+          }
+        },
+        "get": {
+          "summary": "Get all courses",
+          "tags": ["Courses"],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "List of courses",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Course" }
+                  }
+                }
+              }
+            },
+            "401": { "description": "Unauthorized" },
+            "500": { "description": "Server error" }
+          }
+        }
+      },
+      "/courses/{id}": {
+        "get": {
+          "summary": "Get a course by ID",
+          "tags": ["Courses"],
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": { "type": "string" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Course details",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Course" }
+                }
+              }
+            },
+            "401": { "description": "Unauthorized" },
+            "404": { "description": "Course not found" },
+            "500": { "description": "Server error" }
+          }
+        },
+        "put": {
+          "summary": "Update a course",
+          "tags": ["Courses"],
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": { "type": "string" }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CourseCreate" }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Course updated",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Course" }
+                }
+              }
+            },
+            "400": { "description": "Validation error" },
+            "401": { "description": "Unauthorized" },
+            "404": { "description": "Course not found" },
+            "500": { "description": "Server error" }
+          }
+        },
+        "delete": {
+          "summary": "Delete a course (Admin only)",
+          "tags": ["Courses"],
+          "security": [{ "bearerAuth": [] }],
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "required": true,
+              "schema": { "type": "string" }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Course deleted",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            },
+            "403": { "description": "Admin access required" },
+            "404": { "description": "Course not found" },
+            "500": { "description": "Server error" }
+          }
+        }
+      },
+      "/roles": {
+        "post": {
+          "summary": "Create a new role (Admin only)",
+          "tags": ["Roles"],
+          "security": [{ "bearerAuth": [] }],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RoleCreate" }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Role created",
+              "content": {
+                "application/json": {
+                  "schema": { "$ref": "#/components/schemas/Role" }
+                }
+              }
+            },
+            "400": { "description": "Validation error" },
+            "403": { "description": "Admin access required" },
+            "500": { "description": "Server error" }
+          }
+        },
+        "get": {
+          "summary": "Get all roles",
+          "tags": ["Roles"],
+          "security": [{ "bearerAuth": [] }],
+          "responses": {
+            "200": {
+              "description": "List of roles",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": { "$ref": "#/components/schemas/Role" }
+                  }
+                }
+              }
+            },
+            "401": { "description": "Unauthorized" },
+            "500": { "description": "Server error" }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "TeacherCreate": {
+          "type": "object",
+          "properties": {
+            "username": { "type": "string" },
+            "password": { "type": "string", "minLength": 6 },
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" },
+            "status": { "type": "string", "enum": ["active", "inactive"] },
+            "role": { "type": "string", "description": "Role ID" }
+          },
+          "required": ["username", "password", "firstName", "lastName", "role"]
+        },
+        "Teacher": {
+          "type": "object",
+          "properties": {
+            "_id": { "type": "string" },
+            "username": { "type": "string" },
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" },
+            "status": { "type": "string", "enum": ["active", "inactive"] },
+            "role": { "$ref": "#/components/schemas/Role" }
+          }
+        },
+        "CourseCreate": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "teacher": { "type": "string", "description": "Teacher ID" },
+            "courseCode": { "type": "string" }
+          },
+          "required": ["name", "teacher", "courseCode"]
+        },
+        "Course": {
+          "type": "object",
+          "properties": {
+            "_id": { "type": "string" },
+            "name": { "type": "string" },
+            "teacher": {
+              "type": "object",
+              "properties": {
+                "_id": { "type": "string" },
+                "firstName": { "type": "string" },
+                "lastName": { "type": "string" }
+              }
+            },
+            "courseCode": { "type": "string" }
+          }
+        },
+        "RoleCreate": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string", "enum": ["admin", "user"] },
+            "description": { "type": "string" }
+          },
+          "required": ["name", "description"]
+        },
+        "Role": {
+          "type": "object",
+          "properties": {
+            "_id": { "type": "string" },
+            "name": { "type": "string", "enum": ["admin", "user"] },
+            "description": { "type": "string" }
+          }
+        }
+      },
+      "securitySchemes": {
+        "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT",
+          "description": "JWT Authorization header using the Bearer scheme"
+        }
+      }
+    }
+  }
